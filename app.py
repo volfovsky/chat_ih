@@ -169,11 +169,11 @@ def push_responses_to_github(
         return False, response.text
 
 def main():
-    st.title("Intellectual Humility Chatbot (GitHub Integration)")
+    st.title("Intellectual Humility Open Ended Questions (GitHub Integration)")
 
     st.write(
-        "Answer 10 open-ended questions about your intellectual humility. "
-        "We'll compute a score and push your responses to a public GitHub repo."
+        "Answer five open-ended questions and "
+        "we'll compute an intellectual humility score and push your responses to a private GitHub repo."
     )
 
     # 1) Collect user answers
