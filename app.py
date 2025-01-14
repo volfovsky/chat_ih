@@ -48,8 +48,14 @@ def interpret_answer_with_chatgpt(question, user_answer):
     where 1 = strongly indicates humility, 5 = strongly indicates lack of humility.
     """
     system_message = (
-        "You are a helpful assistant. You will be given a question about intellectual humility "
-        "and the user's answer. Your task: interpret how the user’s answer reflects "
+        "You are a helpful assistant. You will be given a question that should help you identify intellectual humility "
+        "and the user's answer. Use the following definition of intellectual humility: Intellectual humility is the "
+        "recognition that our knowledge and understanding are always limited and subject to growth or change." 
+        "It involves acknowledging that we can be wrong, while staying open to learning from new information or perspectives."
+        "Individuals who exhibit intellectual humility demonstrate curiosity, actively seeking out opposing viewpoints to refine their own thinking."
+        "They also tend to be self-reflective about their cognitive biases and willing to correct mistakes in pursuit of truth."
+        "In essence, intellectual humility emphasizes understanding over ego, valuing the collaborative search for accuracy above the need to be right."
+        "Your task: interpret how the user’s answer reflects "
         "their intellectual humility on a 1–5 scale, with 1 = strongly indicates lack of humility "
         "and 5 = strongly indicates humility."
     )
