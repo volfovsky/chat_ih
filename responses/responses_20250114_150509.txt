@@ -1,0 +1,32 @@
+Timestamp: 20250114_150509
+Q1: I enjoy learning from people whose opinions differ from mine.
+Answer: 
+
+Q2: I find it easy to admit when I’m wrong.
+Answer: 
+
+Q3: I’m open to revisiting and potentially changing my core beliefs.
+Answer: 
+
+Q4: I often seek feedback and constructive criticism.
+Answer: 
+
+Q5: I quickly dismiss opposing viewpoints.
+Answer: 
+
+Q6: I find it difficult to say 'I don’t know.'
+Answer: 
+
+Q7: I value expertise in areas where I’m not knowledgeable.
+Answer: 
+
+Q8: I try to see issues from multiple perspectives.
+Answer: 
+
+Q9: It is important to me to be right, even if evidence suggests otherwise.
+Answer: 
+
+Q10: I regularly reflect on how my beliefs may be biased or incomplete.
+Answer: 
+
+Final Score: 7.6
