@@ -50,8 +50,8 @@ def interpret_answer_with_chatgpt(question, user_answer):
     system_message = (
         "You are a helpful assistant. You will be given a question about intellectual humility "
         "and the user's answer. Your task: interpret how the user’s answer reflects "
-        "their intellectual humility on a 1–5 scale, with 1 = strongly indicates humility "
-        "and 5 = strongly indicates lack of humility."
+        "their intellectual humility on a 1–5 scale, with 1 = strongly indicates lack of humility "
+        "and 5 = strongly indicates humility."
     )
     user_prompt = (
         f"Question: {question}\n"
@@ -92,7 +92,7 @@ def calculate_final_score(ratings):
         total_score += rating
 
     # Now map total_score (10–50) to a scale of 1–10
-    final_score = (total_score / 50) * 10
+    final_score = (total_score / 25) * 10
     return round(final_score, 1)
 
 def provide_recommendations(score):
