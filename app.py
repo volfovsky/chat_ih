@@ -23,18 +23,24 @@ GH_REPO = st.secrets["GH_REPO"]
 # 2) Intellectual Humility
 # =========================
 QUESTIONS = [
-    "I enjoy learning from people whose opinions differ from mine.",
-    "I find it easy to admit when I’m wrong.",
-    "I’m open to revisiting and potentially changing my core beliefs.",
-    "I often seek feedback and constructive criticism.",
-    "I quickly dismiss opposing viewpoints.",  # reverse scored
-    "I find it difficult to say 'I don’t know.'",  # reverse scored
-    "I value expertise in areas where I’m not knowledgeable.",
-    "I try to see issues from multiple perspectives.",
-    "It is important to me to be right, even if evidence suggests otherwise.",  # reverse scored
-    "I regularly reflect on how my beliefs may be biased or incomplete."
+    "Can you describe a time you realized you were wrong about something important? How did you come to that realization, and what did you do afterward?"
+    "What’s a topic you used to feel very certain about, but now feel less certain—or even uncertain—about? What made you reconsider?"
+    "When you’re in a debate and you encounter evidence that contradicts your view, how do you usually respond?"
+    "In areas you’re most knowledgeable about, do you ever worry that you might still have blind spots? How do you watch out for them?"
+    "How do you decide which sources of information you trust and which you don’t?"
+    # "I enjoy learning from people whose opinions differ from mine.",
+    # "I find it easy to admit when I’m wrong.",
+    # "I’m open to revisiting and potentially changing my core beliefs.",
+    # "I often seek feedback and constructive criticism.",
+    # "I quickly dismiss opposing viewpoints.",  # reverse scored
+    # "I find it difficult to say 'I don’t know.'",  # reverse scored
+    # "I value expertise in areas where I’m not knowledgeable.",
+    # "I try to see issues from multiple perspectives.",
+    # "It is important to me to be right, even if evidence suggests otherwise.",  # reverse scored
+    # "I regularly reflect on how my beliefs may be biased or incomplete."
 ]
-REVERSE_SCORED = [4, 5, 8]  # 0-based indices for Q5, Q6, Q9
+REVERSE_SCORED = []
+# REVERSE_SCORED = [4, 5, 8]  # 0-based indices for Q5, Q6, Q9
 
 def interpret_answer_with_chatgpt(question, user_answer):
     """
