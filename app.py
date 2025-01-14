@@ -23,10 +23,10 @@ GH_REPO = st.secrets["GH_REPO"]
 # 2) Intellectual Humility
 # =========================
 QUESTIONS = [
-    "Can you describe a time you realized you were wrong about something important? How did you come to that realization, and what did you do afterward?"
-    "What’s a topic you used to feel very certain about, but now feel less certain—or even uncertain—about? What made you reconsider?"
-    "When you’re in a debate and you encounter evidence that contradicts your view, how do you usually respond?"
-    "In areas you’re most knowledgeable about, do you ever worry that you might still have blind spots? How do you watch out for them?"
+    "Can you describe a time you realized you were wrong about something important? How did you come to that realization, and what did you do afterward?",
+    "What’s a topic you used to feel very certain about, but now feel less certain—or even uncertain—about? What made you reconsider?",
+    "When you’re in a debate and you encounter evidence that contradicts your view, how do you usually respond?",
+    "In areas you’re most knowledgeable about, do you ever worry that you might still have blind spots? How do you watch out for them?",
     "How do you decide which sources of information you trust and which you don’t?"
     # "I enjoy learning from people whose opinions differ from mine.",
     # "I find it easy to admit when I’m wrong.",
