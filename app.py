@@ -1,11 +1,27 @@
 import openai
 import streamlit as st
 from datetime import datetime
-import os
+import requests
+import base64
 
+# =========================
+# 1) Set up credentials
+# =========================
+# We'll read these from Streamlit Secrets
+# You must define these in your Streamlit "Secrets" settings:
+#   OPENAI_API_KEY: your OpenAI key
+#   GH_TOKEN: your GitHub personal access token
+#   GH_OWNER: the GitHub username or org that owns the repo
+#   GH_REPO: the name of the repo (public)
+#
 openai.api_key = st.secrets["OPENAI_API_KEY"]
+GH_TOKEN = st.secrets["GH_TOKEN"]
+GH_OWNER = st.secrets["GH_OWNER"]
+GH_REPO = st.secrets["GH_REPO"]
 
-# Our 10 questions
+# =========================
+# 2) Intellectual Humility
+# =========================
 QUESTIONS = [
     "I enjoy learning from people whose opinions differ from mine.",
     "I find it easy to admit when I’m wrong.",
@@ -18,13 +34,12 @@ QUESTIONS = [
     "It is important to me to be right, even if evidence suggests otherwise.",  # reverse scored
     "I regularly reflect on how my beliefs may be biased or incomplete."
 ]
-
-REVERSE_SCORED = [4, 5, 8]  # Q5, Q6, Q9 (0-based indices)
+REVERSE_SCORED = [4, 5, 8]  # 0-based indices for Q5, Q6, Q9
 
 def interpret_answer_with_chatgpt(question, user_answer):
     """
-    Use the ChatCompletion API to interpret user's free-text answer on a 1–5 scale
-    (1 = strongly indicates humility, 5 = strongly indicates lack of humility).
+    Use the ChatCompletion API to interpret user's answer on a 1–5 scale
+    where 1 = strongly indicates humility, 5 = strongly indicates lack of humility.
     """
     system_message = (
         "You are a helpful assistant. You will be given a question about intellectual humility "
@@ -35,7 +50,7 @@ def interpret_answer_with_chatgpt(question, user_answer):
     user_prompt = (
         f"Question: {question}\n"
         f"User's answer: '{user_answer}'\n\n"
-        f"Please respond ONLY with a single integer from 1 to 5 that best fits the user's answer."
+        "Please respond ONLY with a single integer from 1 to 5."
     )
 
     response = openai.ChatCompletion.create(
@@ -52,26 +67,25 @@ def interpret_answer_with_chatgpt(question, user_answer):
     try:
         rating = int(raw_answer)
         if rating < 1 or rating > 5:
-            rating = 3  # fallback if out of range
+            rating = 3  # fallback
     except ValueError:
-        rating = 3  # fallback if not an integer
+        rating = 3  # fallback
 
     return rating
 
 def calculate_final_score(ratings):
     """
     Convert a list of 10 numeric ratings (1–5) into an overall humility
-    score of 1–10, accounting for reverse-scoring on certain items.
+    score (1–10), accounting for reverse-scoring on certain items.
     """
     total_score = 0
     for i, rating in enumerate(ratings):
         if i in REVERSE_SCORED:
-            # Invert for reverse-scored question
-            # (1 -> 5, 5 -> 1, 2 -> 4, etc.)
+            # Invert (1->5, 5->1, etc.)
             rating = 6 - rating
         total_score += rating
 
-    # Map total_score (10–50) to 1–10
+    # Now map total_score (10–50) to a scale of 1–10
     final_score = (total_score / 50) * 10
     return round(final_score, 1)
 
@@ -104,58 +118,112 @@ def provide_recommendations(score):
             "and encouraging others to remain open-minded."
         )
 
-def save_responses_to_file(user_responses, final_score):
+# =========================
+# 3) Pushing to GitHub
+# =========================
+def push_responses_to_github(
+    owner: str, 
+    repo: str, 
+    token: str, 
+    file_path: str, 
+    content: str, 
+    commit_message: str = "Add new responses file"
+):
     """
-    Write the user’s Q&A plus the final numeric score to a timestamped text file.
-    The file is created in the current working directory.
+    Pushes a text file to a GitHub repo using the GitHub REST API.
+    - `owner`: GitHub username/org
+    - `repo`: Repository name
+    - `token`: Personal Access Token with 'repo' scope
+    - `file_path`: The path in the repo where the file will be created, e.g. "responses/..."
+    - `content`: The raw text content to write
+    - `commit_message`: The commit message
     """
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"responses_{timestamp}.txt"
-    with open(filename, "w", encoding="utf-8") as f:
-        for i, ans in enumerate(user_responses):
-            f.write(f"Q{i+1}: {QUESTIONS[i]}\n")
-            f.write(f"Answer: {ans}\n\n")
-        f.write(f"Final Score: {final_score}\n")
+    # Endpoint to create or update file content:
+    # https://api.github.com/repos/{owner}/{repo}/contents/{path}
+    url = f"https://api.github.com/repos/{owner}/{repo}/contents/{file_path}"
 
-    return filename
+    # Must base64-encode the content
+    encoded_bytes = base64.b64encode(content.encode("utf-8"))
+    encoded_str = encoded_bytes.decode("utf-8")
+
+    data = {
+        "message": commit_message,
+        "content": encoded_str
+    }
+
+    headers = {
+        "Authorization": f"token {token}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+
+    response = requests.put(url, json=data, headers=headers)
+    if response.status_code in [200, 201]:
+        return True, response.json()
+    else:
+        return False, response.text
 
 def main():
-    st.title("Intellectual Humility Chatbot")
-    st.write("Answer 10 open-ended questions about your intellectual humility. "
-             "Then the chatbot will calculate your humility score and provide recommendations.")
+    st.title("Intellectual Humility Chatbot (GitHub Integration)")
 
-    # Collect user answers
+    st.write(
+        "Answer 10 open-ended questions about your intellectual humility. "
+        "We'll compute a score and push your responses to a public GitHub repo."
+    )
+
+    # 1) Collect user answers
     user_answers = []
     for i, question in enumerate(QUESTIONS):
         st.write(f"**Question {i+1}:** {question}")
         answer = st.text_area(f"Your answer to Q{i+1}:", key=f"answer_{i}")
         user_answers.append(answer)
 
+    # 2) Button to process
     if st.button("Submit All Answers and Calculate Score"):
         user_ratings = []
         for i, question in enumerate(QUESTIONS):
-            # If any answer is blank, let's provide a default text
-            answer_text = user_answers[i].strip() or "No answer provided."
+            answer_text = user_answers[i].strip()
+            if not answer_text:
+                answer_text = "No answer provided."
             with st.spinner(f"Interpreting your answer for Question {i+1}..."):
                 rating = interpret_answer_with_chatgpt(question, answer_text)
             user_ratings.append(rating)
 
-        # Calculate the final humility score
         final_score = calculate_final_score(user_ratings)
         advice = provide_recommendations(final_score)
 
-        # Display result
         st.subheader(f"Your Intellectual Humility Score: {final_score}/10")
         st.write(advice)
 
-        # Save responses (Q&A + score) to a timestamped file
-        filename = save_responses_to_file(user_answers, final_score)
-        st.success(f"Your responses have been saved to {filename} (locally).")
+        # 3) Build content to push
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_name = f"responses_{timestamp}.txt"
 
-        st.write(
-            "**Note:** If you are running on Streamlit Cloud, these files may not persist. "
-            "For long-term storage, consider using a database or a more permanent storage solution."
+        file_content = []
+        file_content.append(f"Timestamp: {timestamp}")
+        for i, ans in enumerate(user_answers):
+            file_content.append(f"Q{i+1}: {QUESTIONS[i]}")
+            file_content.append(f"Answer: {ans}")
+            file_content.append("")  # blank line
+        file_content.append(f"Final Score: {final_score}")
+        file_text = "\n".join(file_content)
+
+        # You can choose any subfolder in your repo, e.g. "responses/"
+        file_path_in_repo = f"responses/{file_name}"
+
+        st.write("Pushing your responses to GitHub... please wait.")
+        success, gh_response = push_responses_to_github(
+            owner=GH_OWNER,
+            repo=GH_REPO,
+            token=GH_TOKEN,
+            file_path=file_path_in_repo,
+            content=file_text,
+            commit_message=f"Add responses file {file_name}"
         )
+
+        if success:
+            st.success(f"Successfully pushed your responses to GitHub at {file_path_in_repo}.")
+        else:
+            st.error(f"Failed to push to GitHub: {gh_response}")
 
 if __name__ == "__main__":
     main()
